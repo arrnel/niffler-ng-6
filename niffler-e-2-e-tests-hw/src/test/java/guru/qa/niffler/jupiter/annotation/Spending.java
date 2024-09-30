@@ -20,13 +20,10 @@ import java.lang.annotation.Target;
  */
 @Retention(RetentionPolicy.RUNTIME)
 @Target(ElementType.METHOD)
-@ExtendWith({
-        SpendingExtension.class
-})
+@ExtendWith(SpendingExtension.class)
 public @interface Spending {
-    /**
-     * <h7><b>Date pattern "MM/dd/yyyy"</b></h7>
-     */
+
+    /** <h7><b>Date pattern "MM/dd/yyyy"</b></h7>*/
     String date() default "";
 
     String username() default "";
@@ -46,4 +43,5 @@ public @interface Spending {
     boolean notGenerateAmount() default false;
 
     boolean notGenerateCurrency() default false;
+
 }
