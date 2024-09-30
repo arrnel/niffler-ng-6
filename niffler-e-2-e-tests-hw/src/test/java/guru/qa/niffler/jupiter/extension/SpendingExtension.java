@@ -114,9 +114,13 @@ public class SpendingExtension implements BeforeEachCallback, AfterEachCallback,
 
                     var spend = context.getStore(NAMESPACE).get(context.getUniqueId(), SpendJson.class);
 
+                    log.info("Delete spend: id = [{}], description = [{}]", spend.id(), spend.description());
                     spendApiClient.deleteSpends(spend.username(), List.of(spend.id().toString()));
-                    if (isCategoryWasCreatedBySpend && categoryWasArchivedBefore)
-                        categoryApiClient.updateCategory(spend.category().archived(false));
+                    if (isCategoryWasCreatedBySpend){
+                        var category = spend.category();
+                        log.info("Set category archived: id = [{}], name = [{}]", category.id(), category.name());
+                        categoryApiClient.updateCategory(category.archived(false));
+                    }
 
                 });
 
