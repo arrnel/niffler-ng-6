@@ -2,6 +2,8 @@ package guru.qa.niffler.jupiter.extension;
 
 import guru.qa.niffler.api.CategoryApiClient;
 import guru.qa.niffler.api.SpendApiClient;
+import guru.qa.niffler.helper.CollectionsHelper;
+import guru.qa.niffler.jupiter.annotation.CreateNewUser;
 import guru.qa.niffler.jupiter.annotation.Spending;
 import guru.qa.niffler.mapper.SpendMapper;
 import guru.qa.niffler.model.CategoryJson;
@@ -11,10 +13,11 @@ import guru.qa.niffler.utils.SpendUtils;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.*;
-import org.junit.platform.commons.support.AnnotationSupport;
 
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
-import java.util.Optional;
+import java.util.Map;
 
 import static guru.qa.niffler.helper.StringHelper.isNotNullOrEmpty;
 import static guru.qa.niffler.helper.StringHelper.isNullOrEmpty;
@@ -28,59 +31,79 @@ public class SpendingExtension implements BeforeEachCallback, AfterEachCallback,
     private final CategoryApiClient categoryApiClient = new CategoryApiClient();
 
     @Override
-    public void beforeEach(ExtensionContext context) throws Exception {
+    public void beforeEach(ExtensionContext context) {
 
-        AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), Spending.class)
-                .ifPresent(anno -> {
+        Arrays.stream(context.getRequiredTestMethod().getParameters())
+                .filter(parameter -> parameter.isAnnotationPresent(CreateNewUser.class) && parameter.getType().isAssignableFrom(UserModel.class))
+                .forEach(
+                        parameter -> {
+                            var parameterName = parameter.getName();
+                            var userAnno = parameter.getAnnotation(CreateNewUser.class);
+                            if (userAnno.spendings().length > 0) {
 
-                    UserModel user = Optional.ofNullable(context.getStore(CreateNewUserExtension.NAMESPACE)
-                            .get(context.getUniqueId(), UserModel.class)).orElse(new UserModel());
-                    if (user.getUsername() != null) log.info("User from @CreateNewUser: {}", user);
+                                @SuppressWarnings("unchecked")
+                                Map<String, UserModel> usersMap = (Map<String, UserModel>) context.getStore(CreateNewUserExtension.NAMESPACE)
+                                        .get(context.getUniqueId());
+                                UserModel user = usersMap.get(parameterName);
 
-                    checkUsernameIsCorrectlyFilledInSpendingAndCreateNewUserAnnotations(user.getUsername(), anno.username());
-                    var username = anno.username().isEmpty()
-                            ? user.getUsername()
-                            : anno.username();
+                                List<SpendJson> spendings = new ArrayList<>();
+                                Arrays.stream(userAnno.spendings()).forEach(spendAnno -> {
+                                    SpendJson spend = new SpendMapper()
+                                            .updateFromAnno(
+                                                    SpendUtils.generate().setUsername(user.getUsername()),
+                                                    spendAnno
+                                            );
+                                    spend.getCategory().setUsername(user.getUsername());
+                                    spendings.add(spendApiClient.createNewSpend(spend));
+                                });
 
-                    var spend = generateSpendForUserAndLazyUpdateBySpendingAnnotation(username, anno);
-                    context.getStore(NAMESPACE).put(context.getUniqueId(), spendApiClient.createNewSpend(spend));
+                                context.getStore(NAMESPACE).put(
+                                        context.getUniqueId(),
+                                        usersMap.put(parameterName, user.setSpendings(spendings))
+                                );
 
-                    log.info("Created new spend: {}", spend);
+                                log.info("Created new spendings for user = [{}]: {}", user.getUsername(), user.getSpendings());
+                            }
 
-                });
+                        }
+
+                );
 
     }
 
     @Override
-    public void afterEach(ExtensionContext context) throws Exception {
+    public void afterEach(ExtensionContext context) {
 
-        context.getStore(NAMESPACE).remove(context.getUniqueId());
+        Arrays.stream(context.getRequiredTestMethod().getParameters())
+                .filter(parameter -> parameter.isAnnotationPresent(CreateNewUser.class) && parameter.getType().isAssignableFrom(UserModel.class))
+                .forEach(
+                        parameter -> {
+                            var parameterName = parameter.getName();
 
-        AnnotationSupport.findAnnotation(context.getRequiredTestMethod(), Spending.class)
-                .ifPresent(anno -> {
+                            @SuppressWarnings("unchecked")
+                            Map<String, UserModel> usersMap = (Map<String, UserModel>) context.getStore(CreateNewUserExtension.NAMESPACE)
+                                    .get(context.getUniqueId());
 
-                    var spend = context.getStore(NAMESPACE).get(context.getUniqueId(), SpendJson.class);
-                    log.info("Text spend: {}", spend);
-                    log.info("Delete spend: id = [{}], description = [{}]", spend.getId().toString(), spend.getDescription());
-                    spendApiClient.deleteSpends(spend.getUsername(), List.of(spend.getId().toString()));
+                            UserModel user = usersMap.get(parameterName);
 
-                    // If category was created by @Spending (not by @Category), then set category archived
-                    Optional.ofNullable(context.getStore(CategoryExtension.NAMESPACE)
-                            .get(context.getUniqueId(), CategoryJson.class))
-                            .ifPresent(
-                                    category -> {
-                                        if (category.getName().equals(spend.getCategory().getName())){
-                                            log.info("Set category archived: name = [{}]", category.getName());
-                                            categoryApiClient.updateCategory(category.setArchived(false));
-                                        }
-                                    }
-                            );
+                            List<SpendJson> spendings = user.getSpendings();
+                            List<CategoryJson> categories = user.getCategories();
 
-                });
+                            if (CollectionsHelper.isNotNullOrEmpty(spendings)) {
+                                spendApiClient.deleteSpends(user.getUsername(), spendings.stream().map(spend -> spend.getId().toString()).toList());
+                                spendings.stream().map(SpendJson::getCategory)
+                                        .filter(spendCategory -> categories.stream().noneMatch(category -> category.getName().equals(spendCategory.getName())))
+                                        .forEach(category -> categoryApiClient.updateCategory(category.setArchived(true)));
+                            }
+
+
+                        }
+
+                );
 
     }
 
-    public SpendJson generateSpendForUserAndLazyUpdateBySpendingAnnotation(@NonNull String username, Spending anno) {
+    public SpendJson generateAndUpdateBySpendingAnno(@NonNull String username, Spending anno) {
 
         var spend = SpendUtils.generate();
 
@@ -93,7 +116,7 @@ public class SpendingExtension implements BeforeEachCallback, AfterEachCallback,
         return new SpendMapper().updateFromAnno(spend, anno);
     }
 
-    public void checkUsernameIsCorrectlyFilledInSpendingAndCreateNewUserAnnotations(String username, String annoUsername) {
+    public void checkUsernameIsCorrectInStoreAndSpendingAnno(String username, String annoUsername) {
 
         if (isNullOrEmpty(username) && isNullOrEmpty(annoUsername)) {
             throw new IllegalArgumentException("Username should contains in @Spending or should add @CreateNewUser on test");
