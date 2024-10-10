@@ -10,7 +10,6 @@ import guru.qa.niffler.model.CategoryJson;
 import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.model.UserModel;
 import guru.qa.niffler.utils.SpendUtils;
-import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.*;
 
@@ -18,9 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-
-import static guru.qa.niffler.helper.StringHelper.isNotNullOrEmpty;
-import static guru.qa.niffler.helper.StringHelper.isNullOrEmpty;
 
 @Slf4j
 public class SpendingExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
@@ -46,16 +42,16 @@ public class SpendingExtension implements BeforeEachCallback, AfterEachCallback,
                                         .get(context.getUniqueId());
                                 UserModel user = usersMap.get(parameterName);
 
+                                Spending spendAnno = userAnno.spendings()[0];
                                 List<SpendJson> spendings = new ArrayList<>();
-                                Arrays.stream(userAnno.spendings()).forEach(spendAnno -> {
-                                    SpendJson spend = new SpendMapper()
-                                            .updateFromAnno(
-                                                    SpendUtils.generate().setUsername(user.getUsername()),
-                                                    spendAnno
-                                            );
-                                    spend.getCategory().setUsername(user.getUsername());
-                                    spendings.add(spendApiClient.createNewSpend(spend));
-                                });
+
+                                SpendJson spend = new SpendMapper()
+                                        .updateFromAnno(
+                                                SpendUtils.generate().setUsername(user.getUsername()),
+                                                spendAnno
+                                        );
+                                spend.getCategory().setUsername(user.getUsername());
+                                spendings.add(spendApiClient.createNewSpend(spend));
 
                                 context.getStore(NAMESPACE).put(
                                         context.getUniqueId(),
@@ -91,39 +87,13 @@ public class SpendingExtension implements BeforeEachCallback, AfterEachCallback,
 
                             if (CollectionsHelper.isNotNullOrEmpty(spendings)) {
                                 spendApiClient.deleteSpends(user.getUsername(), spendings.stream().map(spend -> spend.getId().toString()).toList());
-                                spendings.stream().map(SpendJson::getCategory)
-                                        .filter(spendCategory -> categories.stream().noneMatch(category -> category.getName().equals(spendCategory.getName())))
-                                        .forEach(category -> categoryApiClient.updateCategory(category.setArchived(true)));
+
+                                var spendCategory = spendings.getFirst().getCategory();
+                                if (!spendCategory.equals(categories.getFirst()))
+                                    categoryApiClient.updateCategory(spendCategory.setArchived(true));
                             }
-
-
                         }
-
                 );
-
-    }
-
-    public SpendJson generateAndUpdateBySpendingAnno(@NonNull String username, Spending anno) {
-
-        var spend = SpendUtils.generate();
-
-        spend = spend
-                .setUsername(username)
-                .setCategory(
-                        spend.getCategory()
-                                .setUsername(username));
-        log.info("EDITED SPEND: {}", spend);
-        return new SpendMapper().updateFromAnno(spend, anno);
-    }
-
-    public void checkUsernameIsCorrectInStoreAndSpendingAnno(String username, String annoUsername) {
-
-        if (isNullOrEmpty(username) && isNullOrEmpty(annoUsername)) {
-            throw new IllegalArgumentException("Username should contains in @Spending or should add @CreateNewUser on test");
-        } else if (isNotNullOrEmpty(username) && isNotNullOrEmpty(annoUsername) && !username.equals(annoUsername)) {
-            throw new IllegalArgumentException("You can not set different usernames in @Spending(username = [%s]) and @CreateNewUser(username = [%s])"
-                    .formatted(annoUsername, username));
-        }
 
     }
 

@@ -1,6 +1,7 @@
 package guru.qa.niffler.jupiter.extension;
 
 import guru.qa.niffler.api.CategoryApiClient;
+import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.jupiter.annotation.CreateNewUser;
 import guru.qa.niffler.mapper.CategoryMapper;
 import guru.qa.niffler.model.CategoryJson;
@@ -39,22 +40,19 @@ public class CategoryExtension implements BeforeEachCallback, ParameterResolver,
                                 var user = usersMap.get(parameterName);
 
                                 List<CategoryJson> categories = new ArrayList<>();
-                                Arrays.stream(userAnno.categories())
-                                        .forEach(categoryAnno -> {
+                                Category categoryAnno = userAnno.categories()[0];
 
-                                            CategoryJson category = new CategoryMapper()
-                                                    .updateFromAnno(
-                                                            CategoryUtils.generate().setUsername(user.getUsername()),
-                                                            categoryAnno
-                                                    );
+                                CategoryJson category = new CategoryMapper()
+                                        .updateFromAnno(
+                                                CategoryUtils.generate().setUsername(user.getUsername()),
+                                                categoryAnno
+                                        );
 
-                                            category = categoryApiClient.createCategory(category.setArchived(false));
-                                            if (categoryAnno.isArchived())
-                                                category = categoryApiClient.updateCategory(category.setArchived(true));
+                                category = categoryApiClient.createCategory(category.setArchived(false));
+                                if (categoryAnno.isArchived())
+                                    category = categoryApiClient.updateCategory(category.setArchived(true));
 
-                                            categories.add(category);
-
-                                        });
+                                categories.add(category);
 
                                 context.getStore(NAMESPACE).put(
                                         context.getUniqueId(),
