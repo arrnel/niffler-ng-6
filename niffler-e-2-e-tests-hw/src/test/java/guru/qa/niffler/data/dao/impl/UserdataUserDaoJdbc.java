@@ -1,35 +1,39 @@
 package guru.qa.niffler.data.dao.impl;
 
-import guru.qa.niffler.data.dao.CategoryDao;
-import guru.qa.niffler.data.entity.CategoryEntity;
+import guru.qa.niffler.data.dao.UserdataUserDao;
+import guru.qa.niffler.data.entity.UserEntity;
+import guru.qa.niffler.model.CurrencyValues;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
-public class CategoryDaoJdbc implements CategoryDao {
+public class UserdataUserDaoJdbc implements UserdataUserDao {
 
     private final Connection connection;
 
-    public CategoryDaoJdbc(Connection connection) {
+    public UserdataUserDaoJdbc(Connection connection) {
         this.connection = connection;
     }
 
-    public CategoryEntity create(CategoryEntity category) {
+    public UserEntity create(UserEntity user) {
 
         try (PreparedStatement ps = connection.prepareStatement(
-                "INSERT INTO category (username, name, archived) VALUES (?, ?, ?)",
+                "INSERT INTO \"user\" (username, currency, firstname, surname, photo, photo_small, full_name) " +
+                        "VALUES ( ?, ?, ?, ?, ?, ?, ?)",
                 PreparedStatement.RETURN_GENERATED_KEYS
         )) {
 
-            ps.setString(1, category.getUsername());
-            ps.setString(2, category.getName());
-            ps.setBoolean(3, category.isArchived());
+            ps.setString(1, user.getUsername());
+            ps.setString(2, user.getCurrency().name());
+            ps.setString(3, user.getFirstName());
+            ps.setString(4, user.getSurname());
+            ps.setBytes(5, user.getPhoto());
+            ps.setBytes(6, user.getPhotoSmall());
+            ps.setString(7, user.getFullName());
 
             ps.executeUpdate();
 
@@ -37,7 +41,7 @@ public class CategoryDaoJdbc implements CategoryDao {
                 if (rs.next()) {
                     return fromResultSet(rs);
                 } else {
-                    throw new SQLException("Could find 'id' in ResultSet");
+                    throw new SQLException("Could not find 'id' in ResultSet");
                 }
             }
 
@@ -47,11 +51,11 @@ public class CategoryDaoJdbc implements CategoryDao {
 
     }
 
-    public Optional<CategoryEntity> findById(UUID id) {
-
+    @Override
+    public Optional<UserEntity> findById(UUID id) {
 
         try (PreparedStatement ps = connection.prepareStatement(
-                "SELECT * FROM category WHERE id = ?"
+                "SELECT * FROM \"user\" WHERE id = ?"
         )) {
 
             ps.setObject(1, id);
@@ -70,15 +74,13 @@ public class CategoryDaoJdbc implements CategoryDao {
     }
 
     @Override
-    public Optional<CategoryEntity> findByUsernameAndName(String username, String categoryName) {
-
+    public Optional<UserEntity> findByUsername(String username) {
 
         try (PreparedStatement ps = connection.prepareStatement(
-                "SELECT * FROM category WHERE username = ? AND name = ?"
+                "SELECT * FROM \"user\" WHERE username = ?"
         )) {
 
             ps.setString(1, username);
-            ps.setString(2, categoryName);
             ps.execute();
 
             try (ResultSet rs = ps.getResultSet()) {
@@ -94,37 +96,12 @@ public class CategoryDaoJdbc implements CategoryDao {
     }
 
     @Override
-    public List<CategoryEntity> findAllByUsername(String username) {
-
-
-        try (PreparedStatement ps = connection.prepareStatement(
-                "SELECT * FROM category WHERE username = ?"
-        )) {
-
-            ps.setString(1, username);
-            ps.execute();
-
-            try (ResultSet rs = ps.getResultSet()) {
-                List<CategoryEntity> categories = new ArrayList<>();
-                while (rs.next())
-                    categories.add(fromResultSet(rs));
-                return categories;
-
-            }
-
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    @Override
-    public void delete(CategoryEntity category) {
+    public void delete(UserEntity user) {
 
         try (PreparedStatement ps = connection.prepareStatement(
-                "DELETE FROM category WHERE id = ?"
+                "DELETE FROM \"user\" WHERE id = ?"
         )) {
-            ps.setObject(1, category.getId());
+            ps.setObject(1, user.getId());
             ps.executeUpdate();
 
         } catch (SQLException e) {
@@ -133,12 +110,16 @@ public class CategoryDaoJdbc implements CategoryDao {
 
     }
 
-    private CategoryEntity fromResultSet(ResultSet rs) throws SQLException {
-        return CategoryEntity.builder()
+    private UserEntity fromResultSet(ResultSet rs) throws SQLException {
+        return UserEntity.builder()
                 .id(rs.getObject("id", UUID.class))
                 .username(rs.getString("username"))
-                .name(rs.getString("name"))
-                .archived(rs.getBoolean("archived"))
+                .currency(CurrencyValues.valueOf(rs.getString("currency")))
+                .firstName(rs.getString("firstname"))
+                .surname(rs.getString("surname"))
+                .photo(rs.getBytes("photo"))
+                .photoSmall(rs.getBytes("photo_small"))
+                .fullName(rs.getString("full_name"))
                 .build();
     }
 
