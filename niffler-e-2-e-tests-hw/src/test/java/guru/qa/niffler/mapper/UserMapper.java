@@ -1,22 +1,35 @@
 package guru.qa.niffler.mapper;
 
 import guru.qa.niffler.data.entity.UserEntity;
+import guru.qa.niffler.data.entity.auth.AuthUserJson;
 import guru.qa.niffler.jupiter.annotation.CreateNewUser;
 import guru.qa.niffler.model.CurrencyValues;
 import guru.qa.niffler.model.UserModel;
 
 public class UserMapper {
 
-    public UserEntity toEntity(UserModel userEntity) {
+    public UserEntity toEntity(UserModel userModel) {
         return UserEntity.builder()
-                .id(userEntity.getId())
-                .username(userEntity.getUsername())
-                .currency(userEntity.getCurrency())
-                .firstName(userEntity.getFirstName())
-                .surname(userEntity.getSurname())
-                .photo(userEntity.getPhoto())
-                .photoSmall(userEntity.getPhotoSmall())
-                .fullName(userEntity.getFullName())
+                .id(userModel.getId())
+                .username(userModel.getUsername())
+                .currency(userModel.getCurrency())
+                .firstName(userModel.getFirstName())
+                .surname(userModel.getSurname())
+                .photo(userModel.getPhoto())
+                .photoSmall(userModel.getPhotoSmall())
+                .fullName(userModel.getFullName())
+                .build();
+    }
+
+    public AuthUserJson toAuthDto(UserModel userModel) {
+        return AuthUserJson.builder()
+                .id(userModel.getId())
+                .username(userModel.getUsername())
+                .accountNonExpired(true)
+                .accountNonLocked(true)
+                .credentialsNonExpired(true)
+                .enabled(true)
+                .password(userModel.getPassword())
                 .build();
     }
 

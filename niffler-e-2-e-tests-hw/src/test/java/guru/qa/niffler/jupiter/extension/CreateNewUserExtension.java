@@ -1,34 +1,24 @@
 package guru.qa.niffler.jupiter.extension;
 
-import guru.qa.niffler.api.AuthApiClient;
 import guru.qa.niffler.jupiter.annotation.CreateNewUser;
-import guru.qa.niffler.mapper.RegisterModelMapper;
 import guru.qa.niffler.mapper.UserMapper;
-import guru.qa.niffler.model.CategoryJson;
-import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.model.UserModel;
-import guru.qa.niffler.service.CategoryDbClient;
-import guru.qa.niffler.service.SpendDbClient;
-import guru.qa.niffler.service.UserDbClient;
+import guru.qa.niffler.service.jdbc.CategoryDbClient;
+import guru.qa.niffler.service.jdbc.SpendDbClient;
+import guru.qa.niffler.service.jdbc.UserDbClient;
 import guru.qa.niffler.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.*;
 
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 @Slf4j
 public class CreateNewUserExtension implements BeforeEachCallback, AfterEachCallback, ParameterResolver {
 
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(CreateNewUserExtension.class);
-    private final AuthApiClient authApiClient  = new AuthApiClient();
-    private final RegisterModelMapper registerModelMapper  = new RegisterModelMapper();
-    private final UserDbClient userDbClient = new UserDbClient();
-    private final CategoryDbClient categoryDbClient = new CategoryDbClient();
-    private final SpendDbClient spendDbClient = new SpendDbClient();
-    private final UserMapper userMapper = new UserMapper();
+    private static final UserMapper userMapper = new UserMapper();
 
     @Override
     public void beforeEach(ExtensionContext context) {
@@ -39,9 +29,13 @@ public class CreateNewUserExtension implements BeforeEachCallback, AfterEachCall
 
                     var parameterName = parameter.getName();
                     var parameterAnno = parameter.getAnnotation(CreateNewUser.class);
-                    UserModel user = userMapper.updateFromAnno(UserUtils.generateValidUser(), parameterAnno);
+                    UserModel user = userMapper.updateFromAnno(UserUtils.generateUser(), parameterAnno);
+                    new UserDbClient().createUserInAuthAndUserdataDBs(user);
+
+                    /* sometimes user absent in userdata db if create user by api
                     authApiClient.register(registerModelMapper.fromUserModel(user));
-                    user.setId(userDbClient.findByUsername(user.getUsername()).get().getId());
+                    user.setId(userdataDbClient.findByUsername(user.getUsername()).get().getId());
+                    */
 
                     @SuppressWarnings("unchecked")
                     Map<String, UserModel> usersMap = ((Map<String, UserModel>) context.getStore(NAMESPACE)
@@ -71,12 +65,13 @@ public class CreateNewUserExtension implements BeforeEachCallback, AfterEachCall
 
                             UserModel user = usersMap.get(parameterName);
 
-                            List<SpendJson> spendings = user.getSpendings();
-                            List<CategoryJson> categories = user.getCategories();
+                            var spendDbClient = new SpendDbClient();
+                            spendDbClient.findAllByUsername(user.getUsername()).forEach(spendDbClient::delete);
 
-                            spendings.forEach(spend -> spendDbClient.delete(spend.getId()));
-                            categories.forEach(category -> categoryDbClient.delete(category.getId()));
-                            userDbClient.delete(user.getId());
+                            var categoryDbClient = new CategoryDbClient();
+                            categoryDbClient.findAllByUsername(user.getUsername()).forEach(categoryDbClient::delete);
+
+                            new UserDbClient().deleteUserFromAuthAndUserdataDBs(user);
 
                         }
                 );
