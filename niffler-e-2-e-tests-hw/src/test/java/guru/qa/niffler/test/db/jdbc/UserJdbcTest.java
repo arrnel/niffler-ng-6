@@ -2,9 +2,9 @@ package guru.qa.niffler.test.db.jdbc;
 
 import guru.qa.niffler.data.entity.auth.AuthUserJson;
 import guru.qa.niffler.model.UserModel;
-import guru.qa.niffler.service.jdbc.AuthUserDbClient;
-import guru.qa.niffler.service.jdbc.UserDbClient;
-import guru.qa.niffler.service.jdbc.UserdataDbClient;
+import guru.qa.niffler.service.impl.jdbc.AuthUserDbClientJdbc;
+import guru.qa.niffler.service.impl.jdbc.UserDbClientJdbcXa;
+import guru.qa.niffler.service.impl.jdbc.UserdataDbClientJdbc;
 import guru.qa.niffler.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -14,9 +14,9 @@ import static org.junit.jupiter.api.Assertions.*;
 @Slf4j
 class UserJdbcTest {
 
-    private final AuthUserDbClient authDbClient = new AuthUserDbClient();
-    private final UserdataDbClient userdataDbClient = new UserdataDbClient();
-    private final UserDbClient userDbClient = new UserDbClient();
+    private final AuthUserDbClientJdbc authDbClient = new AuthUserDbClientJdbc();
+    private final UserdataDbClientJdbc userdataDbClient = new UserdataDbClientJdbc();
+    private final UserDbClientJdbcXa userDbClient = new UserDbClientJdbcXa();
 
     @Test
     void shouldCreateNewUserInTwoDbTest() {

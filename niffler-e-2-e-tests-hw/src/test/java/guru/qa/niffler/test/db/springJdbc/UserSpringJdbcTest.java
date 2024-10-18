@@ -3,12 +3,12 @@ package guru.qa.niffler.test.db.springJdbc;
 import guru.qa.niffler.data.entity.auth.AuthAuthorityJson;
 import guru.qa.niffler.data.entity.auth.AuthUserJson;
 import guru.qa.niffler.model.UserModel;
-import guru.qa.niffler.service.jdbc.AuthUserDbClient;
-import guru.qa.niffler.service.jdbc.UserdataDbClient;
-import guru.qa.niffler.service.springJdbc.AuthAuthorityDbClientSpringJdbc;
-import guru.qa.niffler.service.springJdbc.AuthUserDbClientSpringJdbc;
-import guru.qa.niffler.service.springJdbc.UserDbClientSpringJdbc;
-import guru.qa.niffler.service.springJdbc.UserdataDbClientSpringJdbc;
+import guru.qa.niffler.service.impl.jdbc.AuthUserDbClientJdbc;
+import guru.qa.niffler.service.impl.jdbc.UserdataDbClientJdbc;
+import guru.qa.niffler.service.impl.springJdbc.AuthAuthorityDbClientSpringJdbc;
+import guru.qa.niffler.service.impl.springJdbc.AuthUserDbClientSpringJdbc;
+import guru.qa.niffler.service.impl.springJdbc.UserDbClientSpringJdbc;
+import guru.qa.niffler.service.impl.springJdbc.UserdataDbClientSpringJdbc;
 import guru.qa.niffler.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
@@ -31,7 +31,7 @@ class UserSpringJdbcTest {
         new UserDbClientSpringJdbc().createUserInAuthAndUserdataDBs(user);
 
         assertAll("Users from niffler-auth and niffler-userdata should have id", () -> {
-            assertNotNull(new AuthUserDbClient()
+            assertNotNull(new AuthUserDbClientJdbc()
                     .findByUsername(user.getUsername())
                     .orElse(new AuthUserJson())
                     .getId());
@@ -61,7 +61,7 @@ class UserSpringJdbcTest {
 
         List<AuthAuthorityJson> authorities = new AuthAuthorityDbClientSpringJdbc().findByUserId(user.getId());
         Optional<AuthUserJson> authUser = new AuthUserDbClientSpringJdbc().findByUsername(user.getUsername());
-        Optional<UserModel> userdataUser = new UserdataDbClient().findByUsername(user.getUsername());
+        Optional<UserModel> userdataUser = new UserdataDbClientJdbc().findByUsername(user.getUsername());
 
         assertAll("User should not exists in niffler-auth and niffler-userdata", () -> {
             assertTrue(authorities.isEmpty());
