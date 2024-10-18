@@ -10,7 +10,6 @@ import guru.qa.niffler.mapper.AuthAuthorityMapper;
 import guru.qa.niffler.service.AuthAuthorityDbClient;
 import lombok.extern.slf4j.Slf4j;
 
-import java.sql.Connection;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;

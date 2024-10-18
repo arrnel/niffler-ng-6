@@ -9,11 +9,10 @@ import java.util.Properties;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class DataSources {
+    private static final Map<String, DataSource> dataSources = new ConcurrentHashMap<>();
 
     private DataSources() {
     }
-
-    private static final Map<String, DataSource> dataSources = new ConcurrentHashMap<>();
 
     public static DataSource dataSource(String jdbcUrl) {
         return dataSources.computeIfAbsent(
@@ -34,5 +33,4 @@ public class DataSources {
                 }
         );
     }
-
 }

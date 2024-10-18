@@ -1,35 +1,25 @@
-package guru.qa.niffler.test.db.springJdbc;
+package guru.qa.niffler.test.db.jdbc;
 
-import guru.qa.niffler.data.entity.auth.AuthAuthorityEntity;
-import guru.qa.niffler.data.entity.auth.AuthAuthorityJson;
 import guru.qa.niffler.data.entity.auth.AuthUserJson;
-import guru.qa.niffler.model.UserModel;
 import guru.qa.niffler.service.AuthAuthorityDbClient;
+import guru.qa.niffler.service.AuthUserDbClient;
 import guru.qa.niffler.service.UserdataDbClient;
 import guru.qa.niffler.service.UsersDbClient;
-import guru.qa.niffler.service.impl.jdbc.AuthUserDbClientJdbc;
-import guru.qa.niffler.service.impl.jdbc.UserdataDbClientJdbc;
-import guru.qa.niffler.service.impl.springJdbc.AuthAuthorityDbClientSpringJdbc;
-import guru.qa.niffler.service.impl.springJdbc.AuthUserDbClientSpringJdbc;
-import guru.qa.niffler.service.impl.springJdbc.UsersDbClientSpringJdbc;
-import guru.qa.niffler.service.impl.springJdbc.UserdataDbClientSpringJdbc;
+import guru.qa.niffler.service.impl.jdbc.*;
+import guru.qa.niffler.service.impl.springJdbc.*;
 import guru.qa.niffler.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 
-import java.util.List;
-import java.util.Optional;
-
 import static org.junit.jupiter.api.Assertions.*;
 
 @Slf4j
-class UserSpringJdbcTest {
+class UserJdbcXaTest {
 
-    private final UsersDbClient usersDbClient = new UsersDbClientSpringJdbc();
-
-    private final AuthAuthorityDbClient authorityDbClient = new AuthAuthorityDbClientSpringJdbc();
-    private final AuthUserDbClientSpringJdbc authUserDbClient = new AuthUserDbClientSpringJdbc();
-    private final UserdataDbClient userdataDbClient = new UserdataDbClientSpringJdbc();
+    private final UsersDbClient usersDbClient = new UsersDbClientJdbcXa();
+    private final AuthAuthorityDbClient authorityDbClient = new AuthAuthorityDbClientJdbc();;
+    private final AuthUserDbClient authUserDbClient = new AuthUserDbClientJdbc();
+    private final UserdataDbClient userdataDbClient = new UserdataDbClientJdbc();
 
     @Test
     void shouldCreateNewUserInTwoDbTest() {

@@ -6,11 +6,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Connections {
+    private static final Map<String, JdbcConnectionHolder> holders = new ConcurrentHashMap<>();
 
     private Connections() {
     }
-
-    private static final Map<String, JdbcConnectionHolder> holders = new ConcurrentHashMap<>();
 
     public static JdbcConnectionHolder holder(String jdbcUrl) {
         return holders.computeIfAbsent(
@@ -29,8 +28,7 @@ public class Connections {
         return new JdbcConnectionHolders(result);
     }
 
-    public static void closeAllConnections()  {
+    public static void closeAllConnections() {
         holders.values().forEach(JdbcConnectionHolder::closeAllConnections);
     }
-
 }

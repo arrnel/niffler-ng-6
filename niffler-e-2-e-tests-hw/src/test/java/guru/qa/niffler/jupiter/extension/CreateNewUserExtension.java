@@ -5,7 +5,7 @@ import guru.qa.niffler.mapper.UserMapper;
 import guru.qa.niffler.model.UserModel;
 import guru.qa.niffler.service.impl.jdbc.CategoryDbClientJdbc;
 import guru.qa.niffler.service.impl.jdbc.SpendDbClientJdbc;
-import guru.qa.niffler.service.impl.jdbc.UserDbClientJdbcXa;
+import guru.qa.niffler.service.impl.jdbc.UsersDbClientJdbcXa;
 import guru.qa.niffler.utils.UserUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.extension.*;
@@ -30,7 +30,7 @@ public class CreateNewUserExtension implements BeforeEachCallback, AfterEachCall
                     var parameterName = parameter.getName();
                     var parameterAnno = parameter.getAnnotation(CreateNewUser.class);
                     UserModel user = userMapper.updateFromAnno(UserUtils.generateUser(), parameterAnno);
-                    new UserDbClientJdbcXa().createUserInAuthAndUserdataDBs(user);
+                    new UsersDbClientJdbcXa().createUserInAuthAndUserdataDBs(user);
 
                     @SuppressWarnings("unchecked")
                     Map<String, UserModel> usersMap = ((Map<String, UserModel>) context.getStore(NAMESPACE)
@@ -66,7 +66,7 @@ public class CreateNewUserExtension implements BeforeEachCallback, AfterEachCall
                             var categoryDbClient = new CategoryDbClientJdbc();
                             categoryDbClient.findAllByUsername(user.getUsername()).forEach(categoryDbClient::delete);
 
-                            new UserDbClientJdbcXa().deleteUserFromAuthAndUserdataDBs(user);
+                            new UsersDbClientJdbcXa().deleteUserFromAuthAndUserdataDBs(user);
 
                         }
                 );

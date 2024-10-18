@@ -32,28 +32,28 @@ public class JdbcConnectionHolder implements AutoCloseable {
     @Override
     public void close() {
         Optional.ofNullable(threadConnections.remove(Thread.currentThread().threadId()))
-                .ifPresent(
-                        connection -> {
-                            try {
-                                if (connection.isClosed())
-                                    connection.close();
-                            } catch (SQLException e) {
-                                // NOP
-                            }
-                        }
-                );
-    }
-
-    public void closeAllConnections() {
-        threadConnections.values()
-                .forEach(connection -> {
+                .ifPresent(connection -> {
                     try {
-                        if (connection != null && connection.isClosed())
+                        if (!connection.isClosed()) {
                             connection.close();
+                        }
                     } catch (SQLException e) {
                         // NOP
                     }
                 });
     }
 
+    public void closeAllConnections() {
+        threadConnections.values().forEach(
+                connection -> {
+                    try {
+                        if (connection != null && !connection.isClosed()) {
+                            connection.close();
+                        }
+                    } catch (SQLException e) {
+                        // NOP
+                    }
+                }
+        );
+    }
 }
