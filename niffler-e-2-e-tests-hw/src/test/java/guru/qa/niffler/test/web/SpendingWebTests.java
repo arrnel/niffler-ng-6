@@ -42,7 +42,7 @@ class SpendingWebTests {
 
         open(LOGIN_PAGE_URL, LoginPage.class)
                 .login(user.getUsername(), user.getPassword())
-                .openEditSpendingPage(user.getSpendings().getFirst())
+                .openEditSpendingPage(user.getTestData().getSpendings().getFirst())
                 .editSpending(newSpend)
                 .openEditSpendingPage(newSpend)
                 .shouldHaveData(newSpend);
@@ -52,7 +52,7 @@ class SpendingWebTests {
     @Test
     @Spending
     void canCreateNewSpendingWithExistsDescriptionTest(@CreateNewUser(spendings = @Spending) UserModel user) {
-        var spend = user.getSpendings().getFirst();
+        var spend = user.getTestData().getSpendings().getFirst();
         open(LOGIN_PAGE_URL, LoginPage.class)
                 .login(user.getUsername(), user.getPassword())
                 .createNewSpending(spend)

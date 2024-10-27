@@ -4,6 +4,7 @@ import com.github.javafaker.Faker;
 import guru.qa.niffler.helper.EnumHelper;
 import guru.qa.niffler.model.AuthUserJson;
 import guru.qa.niffler.model.CurrencyValues;
+import guru.qa.niffler.model.TestData;
 import guru.qa.niffler.model.UserModel;
 
 import java.util.Collections;
@@ -26,8 +27,6 @@ public class UserUtils {
                 .photo(null)
                 .photoSmall(null)
                 .fullName(firstName + " " + surname)
-                .categories(Collections.emptyList())
-                .spendings(Collections.emptyList())
                 .build();
 
     }

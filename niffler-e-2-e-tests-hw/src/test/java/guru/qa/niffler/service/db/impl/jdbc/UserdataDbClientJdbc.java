@@ -8,11 +8,14 @@ import guru.qa.niffler.data.tpl.JdbcTransactionTemplate;
 import guru.qa.niffler.mapper.UserMapper;
 import guru.qa.niffler.model.UserModel;
 import guru.qa.niffler.service.db.UserdataDbClient;
+import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+
+import static guru.qa.niffler.data.entity.userdata.FriendshipStatus.PENDING;
 
 
 @Slf4j
@@ -25,7 +28,7 @@ public class UserdataDbClientJdbc implements UserdataDbClient {
     private final UserdataUserDao userdataUserDao = new UserdataUserDaoJdbc();
 
     @Override
-    public UserModel create(UserModel userModel) {
+    public UserModel create(@NonNull UserModel userModel) {
         log.info("Creating new user by DTO: {}", userModel);
         return jdbcTxTemplate.execute(() ->
                 userMapper.toDto(
@@ -35,7 +38,7 @@ public class UserdataDbClientJdbc implements UserdataDbClient {
     }
 
     @Override
-    public Optional<UserModel> findById(UUID id) {
+    public Optional<UserModel> findById(@NonNull UUID id) {
         log.info("Get user by id = [{}]", id);
         return jdbcTxTemplate.execute(() ->
                 userdataUserDao
@@ -44,7 +47,7 @@ public class UserdataDbClientJdbc implements UserdataDbClient {
     }
 
     @Override
-    public Optional<UserModel> findByUsername(String username) {
+    public Optional<UserModel> findByUsername(@NonNull String username) {
         log.info("Get user by username = [{}]", username);
         return jdbcTxTemplate.execute(() ->
                 userdataUserDao
@@ -65,32 +68,34 @@ public class UserdataDbClientJdbc implements UserdataDbClient {
     }
 
     @Override
-    public void sendInvitation(UserModel requester, UserModel addressee, FriendshipStatus status) {
+    public void sendInvitation(@NonNull UserModel requester, @NonNull UserModel addressee) {
         jdbcTxTemplate.execute(() -> {
-                    userdataUserDao
-                            .sendInvitation(userMapper.toEntity(requester), userMapper.toEntity(addressee), status);
-                    return null;
-                }
-        );
+            userdataUserDao.sendInvitation(
+                    userMapper.toEntity(requester),
+                    userMapper.toEntity(addressee),
+                    PENDING);
+            return null;
+        });
     }
 
     @Override
-    public void addFriend(UserModel requester, UserModel addressee) {
+    public void addFriend(@NonNull UserModel requester, @NonNull UserModel addressee) {
         log.info("Make users are friends: [{}], [{}]", requester.getUsername(), addressee.getUsername());
         jdbcTxTemplate.execute(() -> {
-                    userdataUserDao
-                            .addFriend(userMapper.toEntity(requester), userMapper.toEntity(addressee));
+                    userdataUserDao.addFriend(
+                            userMapper.toEntity(requester),
+                            userMapper.toEntity(addressee));
                     return null;
                 }
         );
     }
 
     @Override
-    public void remove(UserModel user) {
+    public void remove(@NonNull UserModel user) {
         log.info("Remove user by id: {}", user);
         jdbcTxTemplate.execute(() -> {
-                    userdataUserDao
-                            .remove(userMapper.toEntity(user));
+                    userdataUserDao.remove(
+                            userMapper.toEntity(user));
                     return null;
                 }
         );

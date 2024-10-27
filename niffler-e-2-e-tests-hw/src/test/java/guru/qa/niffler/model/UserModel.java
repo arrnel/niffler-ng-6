@@ -1,5 +1,7 @@
 package guru.qa.niffler.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.*;
 import lombok.experimental.Accessors;
 
@@ -35,10 +37,22 @@ public class UserModel {
 
     private String fullName;
 
-    @Builder.Default
-    private List<CategoryJson> categories = new ArrayList<>();
+    private transient TestData testData;
 
-    @Builder.Default
-    private List<SpendJson> spendings = new ArrayList<>();
+    public UserModel addTestData(TestData testData) {
+        return UserModel.builder()
+                .id(this.id)
+                .username(this.username)
+                .password(this.password)
+                .passwordConfirmation(this.passwordConfirmation)
+                .currency(this.currency)
+                .firstName(this.firstName)
+                .surname(this.surname)
+                .photo(this.photo)
+                .photoSmall(this.photoSmall)
+                .fullName(this.fullName)
+                .testData(testData)
+                .build();
+    }
 
 }

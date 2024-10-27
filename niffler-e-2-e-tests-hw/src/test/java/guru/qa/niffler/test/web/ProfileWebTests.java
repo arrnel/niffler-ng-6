@@ -83,7 +83,7 @@ class ProfileWebTests {
     @Test
     void canNotCreateCategoryWithExistsNameTest(@CreateNewUser(categories = @Category) UserModel user) {
 
-        var categoryName = user.getCategories().getFirst().getName();
+        var categoryName = user.getTestData().getCategories().getFirst().getName();
 
         Selenide.open(LOGIN_PAGE_URL, LoginPage.class)
                 .login(user.getUsername(), user.getPassword())
@@ -105,7 +105,7 @@ class ProfileWebTests {
                 .getHeader()
                 .openUserMenu()
                 .goToProfilePage()
-                .editCategoryName(user.getCategories().getFirst().getName(), newCategoryName);
+                .editCategoryName(user.getTestData().getCategories().getFirst().getName(), newCategoryName);
 
         Selenide.refresh();
         profile.shouldCategoryExists(newCategoryName);
@@ -115,7 +115,7 @@ class ProfileWebTests {
     @Test
     void canSetCategoryArchivedTest(@CreateNewUser(categories = @Category) UserModel user) {
 
-        var categoryName = user.getCategories().getFirst().getName();
+        var categoryName = user.getTestData().getCategories().getFirst().getName();
 
         Selenide.open(LOGIN_PAGE_URL, LoginPage.class)
                 .login(user.getUsername(), user.getPassword())
@@ -133,7 +133,7 @@ class ProfileWebTests {
     @Test
     void canSetCategoryUnarchivedTest(@CreateNewUser(categories = @Category(isArchived = true)) UserModel user) {
 
-        var categoryName = user.getCategories().getFirst().getName();
+        var categoryName = user.getTestData().getCategories().getFirst().getName();
 
         Selenide.open(LOGIN_PAGE_URL, LoginPage.class)
                 .login(user.getUsername(), user.getPassword())

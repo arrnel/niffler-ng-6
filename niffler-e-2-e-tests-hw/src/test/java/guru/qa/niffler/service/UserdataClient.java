@@ -17,7 +17,7 @@ public interface UserdataClient {
 
     List<UserModel> findAll();
 
-    void sendInvitation(UserModel requester, UserModel addressee, FriendshipStatus status);
+    void sendInvitation(UserModel requester, UserModel addressee);
 
     void addFriend(UserModel requester, UserModel addressee);
 

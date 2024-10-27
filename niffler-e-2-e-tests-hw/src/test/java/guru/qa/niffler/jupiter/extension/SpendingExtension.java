@@ -6,6 +6,7 @@ import guru.qa.niffler.jupiter.annotation.CreateNewUser;
 import guru.qa.niffler.jupiter.annotation.Spending;
 import guru.qa.niffler.mapper.SpendMapper;
 import guru.qa.niffler.model.SpendJson;
+import guru.qa.niffler.model.TestData;
 import guru.qa.niffler.model.UserModel;
 import guru.qa.niffler.service.SpendClient;
 import guru.qa.niffler.service.db.impl.springJdbc.SpendDbClientSpringJdbc;
@@ -22,6 +23,7 @@ import java.util.Map;
 public class SpendingExtension implements BeforeEachCallback, ParameterResolver {
 
     public static final ExtensionContext.Namespace NAMESPACE = ExtensionContext.Namespace.create(SpendingExtension.class);
+    private static final SpendMapper spendMapper = new SpendMapper();
     private final CategoryDao categoryDbClient = new CategoryDaoSpringJdbc();
     private final SpendClient spendClient = new SpendDbClientSpringJdbc();
 
@@ -45,31 +47,24 @@ public class SpendingExtension implements BeforeEachCallback, ParameterResolver 
                                         .get(context.getUniqueId());
                                 UserModel user = usersMap.get(parameterName);
 
-                                Spending spendAnno = userAnno.spendings()[0];
                                 List<SpendJson> spendings = new ArrayList<>();
-
-                                SpendJson spend = new SpendMapper()
-                                        .updateFromAnno(
-                                                SpendUtils.generateForUser(user.getUsername()),
-                                                spendAnno
-                                        );
-
-                                // for db creation
-                                var category = spend.getCategory();
-                                category = spendClient
-                                        .findCategoryByUsernameAndName(user.getUsername(), category.getName())
-                                        .orElse(spendClient.createCategory(category));
-                                spend.setCategory(category);
-                                // end for db creation
-
-                                spendings.add(spendClient.create(spend));
+                                Arrays.stream(userAnno.spendings())
+                                        .forEach(spendAnno -> {
+                                            spendings.add(
+                                                    spendClient.create(
+                                                            spendMapper.updateFromAnno(
+                                                                    SpendUtils.generateForUser(user.getUsername()),
+                                                                    spendAnno
+                                                            )
+                                                    ));
+                                        });
 
                                 context.getStore(NAMESPACE).put(
                                         context.getUniqueId(),
-                                        usersMap.put(parameterName, user.setSpendings(spendings))
+                                        usersMap.put(parameterName, user.setTestData(new TestData().setSpendings(spendings)))
                                 );
 
-                                log.info("Created new spendings for user = [{}]: {}", user.getUsername(), user.getSpendings());
+                                log.info("Created new spendings for user = [{}]: {}", user.getUsername(), user.getTestData().getSpendings());
                             }
 
                         }

@@ -4,6 +4,7 @@ import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.jupiter.annotation.CreateNewUser;
 import guru.qa.niffler.mapper.CategoryMapper;
 import guru.qa.niffler.model.CategoryJson;
+import guru.qa.niffler.model.TestData;
 import guru.qa.niffler.model.UserModel;
 import guru.qa.niffler.service.SpendClient;
 import guru.qa.niffler.service.db.impl.springJdbc.SpendDbClientSpringJdbc;
@@ -56,10 +57,10 @@ public class CategoryExtension implements BeforeEachCallback, ParameterResolver 
 
                                 context.getStore(NAMESPACE).put(
                                         context.getUniqueId(),
-                                        usersMap.put(parameterName, user.setCategories(categories))
+                                        usersMap.put(parameterName, user.setTestData(new TestData().setCategories(categories)))
                                 );
 
-                                log.info("Created new categories for user = [{}]: {}", user.getUsername(), user.getCategories());
+                                log.info("Created new categories for user = [{}]: {}", user.getUsername(), user.getTestData().getCategories());
 
                             }
                         }

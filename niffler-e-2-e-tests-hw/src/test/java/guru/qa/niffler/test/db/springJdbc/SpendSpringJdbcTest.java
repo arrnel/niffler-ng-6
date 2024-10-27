@@ -20,7 +20,7 @@ class SpendSpringJdbcTest {
 
     @Test
     void shouldCreateNewSpendTest(@CreateNewUser(categories = @Category) UserModel user) {
-        var category = user.getCategories().getFirst();
+        var category = user.getTestData().getCategories().getFirst();
         assertNotNull(spendClient
                         .create(SpendUtils.generateForUser(user.getUsername()).setCategory(category))
                         .getId());
@@ -29,7 +29,7 @@ class SpendSpringJdbcTest {
     @Test
     void shouldGetSpendByIdTest(@CreateNewUser(spendings = @Spending) UserModel user) {
         assertNotNull(spendClient
-                .findById(user.getSpendings().getFirst().getId()));
+                .findById(user.getTestData().getSpendings().getFirst().getId()));
     }
 
     @Test
@@ -37,7 +37,7 @@ class SpendSpringJdbcTest {
         assertNotNull(spendClient
                         .findAllByUsernameAndDescription(
                                 user.getUsername(),
-                                user.getSpendings().getFirst().getDescription()));
+                                user.getTestData().getSpendings().getFirst().getDescription()));
     }
 
     @Test
@@ -54,14 +54,14 @@ class SpendSpringJdbcTest {
     ) {
         var allSpendings = spendClient.findAll();
         assertAll("Should contains users spendings", () -> {
-            assertTrue(allSpendings.contains(user1.getSpendings().getFirst()));
-            assertTrue(allSpendings.contains(user2.getSpendings().getFirst()));
+            assertTrue(allSpendings.contains(user1.getTestData().getSpendings().getFirst()));
+            assertTrue(allSpendings.contains(user2.getTestData().getSpendings().getFirst()));
         });
     }
 
     @Test
     void shouldRemoveSpendTest(@CreateNewUser(spendings = @Spending) UserModel user) {
-        spendClient.remove(user.getSpendings().getFirst());
+        spendClient.remove(user.getTestData().getSpendings().getFirst());
         assertTrue(spendClient
                 .findAllByUsername(user.getUsername()).isEmpty());
     }
@@ -77,7 +77,7 @@ class SpendSpringJdbcTest {
     @Test
     void shouldGetCategoryByIdTest(@CreateNewUser(categories = @Category) UserModel user) {
         assertNotNull(spendClient
-                .findCategoryById(user.getCategories().getFirst().getId()));
+                .findCategoryById(user.getTestData().getCategories().getFirst().getId()));
     }
 
     @Test
@@ -85,7 +85,7 @@ class SpendSpringJdbcTest {
         assertNotNull(spendClient
                 .findCategoryByUsernameAndName(
                         user.getUsername(),
-                        user.getCategories().getFirst().getName()));
+                        user.getTestData().getCategories().getFirst().getName()));
     }
 
     @Test
@@ -102,14 +102,14 @@ class SpendSpringJdbcTest {
     ) {
         var allCategories = spendClient.findAllCategories();
         assertAll("Should contains users categories", () -> {
-            assertTrue(allCategories.contains(user1.getCategories().getFirst()));
-            assertTrue(allCategories.contains(user2.getCategories().getFirst()));
+            assertTrue(allCategories.contains(user1.getTestData().getCategories().getFirst()));
+            assertTrue(allCategories.contains(user2.getTestData().getCategories().getFirst()));
         });
     }
 
     @Test
     void shouldRemoveCategoryTest(@CreateNewUser(categories = @Category) UserModel user) {
-        spendClient.removeCategory(user.getCategories().getFirst());
+        spendClient.removeCategory(user.getTestData().getCategories().getFirst());
         assertTrue(spendClient.findAllCategoriesByUsername(user.getUsername()).isEmpty());
     }
 
