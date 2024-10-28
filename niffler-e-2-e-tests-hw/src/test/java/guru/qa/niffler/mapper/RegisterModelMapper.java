@@ -1,7 +1,7 @@
 package guru.qa.niffler.mapper;
 
 import guru.qa.niffler.model.RegisterModel;
-import guru.qa.niffler.model.UserModel;
+import guru.qa.niffler.model.UserJson;
 import lombok.NonNull;
 
 import java.util.Map;
@@ -17,7 +17,7 @@ public class RegisterModelMapper {
         );
     }
 
-    public RegisterModel fromUserModel(@NonNull UserModel source) {
+    public RegisterModel fromUserModel(@NonNull UserJson source) {
         return RegisterModel.builder()
                 .username(source.getUsername())
                 .password(source.getPassword())

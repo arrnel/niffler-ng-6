@@ -13,7 +13,7 @@ import guru.qa.niffler.data.tpl.XaTransactionTemplate;
 import guru.qa.niffler.ex.UserNotFoundException;
 import guru.qa.niffler.mapper.AuthUserMapper;
 import guru.qa.niffler.mapper.UserMapper;
-import guru.qa.niffler.model.UserModel;
+import guru.qa.niffler.model.UserJson;
 import guru.qa.niffler.service.db.UsersDbClient;
 import guru.qa.niffler.utils.UserUtils;
 import lombok.NonNull;
@@ -36,11 +36,11 @@ public class UsersDbClientHibernate implements UsersDbClient {
 
 
     @Override
-    public UserModel createUser(@NonNull UserModel userModel) {
+    public UserJson createUser(@NonNull UserJson userJson) {
 
-        log.info("Creating new user with authorities in niffler-auth and niffler-userdata by DTO: {}", userModel);
+        log.info("Creating new user with authorities in niffler-auth and niffler-userdata by DTO: {}", userJson);
 
-        var authUserEntity = authUserMapper.toEntity(userMapper.toAuthDto(userModel));
+        var authUserEntity = authUserMapper.toEntity(userMapper.toAuthDto(userJson));
         authUserEntity.setAuthorities(
                 List.of(AuthAuthorityEntity.builder().authority(Authority.read).user(authUserEntity).build(),
                         AuthAuthorityEntity.builder().authority(Authority.write).user(authUserEntity).build())
@@ -50,7 +50,7 @@ public class UsersDbClientHibernate implements UsersDbClient {
             authUserRepository.create(authUserEntity);
             return userMapper.toDto(
                     userdataUserRepository.create(
-                            userMapper.toEntity(userModel)));
+                            userMapper.toEntity(userJson)));
 
         });
 
@@ -58,7 +58,7 @@ public class UsersDbClientHibernate implements UsersDbClient {
     }
 
     @Override
-    public void getIncomeInvitationFromNewUsers(@NonNull UserModel requester, int count) {
+    public void getIncomeInvitationFromNewUsers(@NonNull UserJson requester, int count) {
 
         if (count > 0) {
             UserEntity requesterEntity = userdataUserRepository.findById(
@@ -82,7 +82,7 @@ public class UsersDbClientHibernate implements UsersDbClient {
     }
 
     @Override
-    public void sendOutcomeInvitationToNewUsers(@NonNull UserModel requester, int count) {
+    public void sendOutcomeInvitationToNewUsers(@NonNull UserJson requester, int count) {
 
         if (count > 0) {
             UserEntity requesterEntity = userdataUserRepository.findById(
@@ -105,7 +105,7 @@ public class UsersDbClientHibernate implements UsersDbClient {
     }
 
     @Override
-    public void addNewFriends(@NonNull UserModel requester, int count) {
+    public void addNewFriends(@NonNull UserJson requester, int count) {
 
         if (count > 0) {
             UserEntity requesterEntity = userdataUserRepository.findById(
@@ -127,12 +127,12 @@ public class UsersDbClientHibernate implements UsersDbClient {
     }
 
     @Override
-    public void removeUser(@NonNull UserModel userModel) {
-        log.info("Remove user from niffler-auth and niffler-userdata with username = [{}]", userModel.getUsername());
+    public void removeUser(@NonNull UserJson userJson) {
+        log.info("Remove user from niffler-auth and niffler-userdata with username = [{}]", userJson.getUsername());
         xaTxTemplate.execute(() -> {
-            authUserRepository.findByUsername(userModel.getUsername())
+            authUserRepository.findByUsername(userJson.getUsername())
                     .ifPresent(authUserRepository::remove);
-            userdataUserRepository.findByUsername(userModel.getUsername())
+            userdataUserRepository.findByUsername(userJson.getUsername())
                     .ifPresent(userdataUserRepository::remove);
             return null;
         });

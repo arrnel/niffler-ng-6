@@ -3,11 +3,10 @@ package guru.qa.niffler.jupiter.extension;
 import guru.qa.niffler.data.dao.CategoryDao;
 import guru.qa.niffler.data.dao.impl.springJdbc.CategoryDaoSpringJdbc;
 import guru.qa.niffler.jupiter.annotation.CreateNewUser;
-import guru.qa.niffler.jupiter.annotation.Spending;
 import guru.qa.niffler.mapper.SpendMapper;
 import guru.qa.niffler.model.SpendJson;
 import guru.qa.niffler.model.TestData;
-import guru.qa.niffler.model.UserModel;
+import guru.qa.niffler.model.UserJson;
 import guru.qa.niffler.service.SpendClient;
 import guru.qa.niffler.service.db.impl.springJdbc.SpendDbClientSpringJdbc;
 import guru.qa.niffler.utils.SpendUtils;
@@ -32,7 +31,7 @@ public class SpendingExtension implements BeforeEachCallback, ParameterResolver 
 
         Arrays.stream(context.getRequiredTestMethod().getParameters())
                 .filter(parameter -> parameter.isAnnotationPresent(CreateNewUser.class)
-                        && parameter.getType().isAssignableFrom(UserModel.class))
+                        && parameter.getType().isAssignableFrom(UserJson.class))
                 .forEach(
                         parameter -> {
 
@@ -42,10 +41,10 @@ public class SpendingExtension implements BeforeEachCallback, ParameterResolver 
                             if (userAnno.spendings().length > 0) {
 
                                 @SuppressWarnings("unchecked")
-                                Map<String, UserModel> usersMap = (Map<String, UserModel>) context
+                                Map<String, UserJson> usersMap = (Map<String, UserJson>) context
                                         .getStore(CreateNewUserExtension.NAMESPACE)
                                         .get(context.getUniqueId());
-                                UserModel user = usersMap.get(parameterName);
+                                UserJson user = usersMap.get(parameterName);
 
                                 List<SpendJson> spendings = new ArrayList<>();
                                 Arrays.stream(userAnno.spendings())

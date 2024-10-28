@@ -1,7 +1,7 @@
 package guru.qa.niffler.mapper;
 
 import guru.qa.niffler.model.LoginModel;
-import guru.qa.niffler.model.UserModel;
+import guru.qa.niffler.model.UserJson;
 import lombok.NonNull;
 
 import java.util.Map;
@@ -16,7 +16,7 @@ public class LoginModelToMap {
         );
     }
 
-    public LoginModel fromUserModel(@NonNull UserModel source) {
+    public LoginModel fromUserModel(@NonNull UserJson source) {
         return LoginModel.builder()
                 .username(source.getUsername())
                 .password(source.getPassword())

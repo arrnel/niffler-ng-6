@@ -3,7 +3,7 @@ package guru.qa.niffler.test.db.jdbc;
 import guru.qa.niffler.jupiter.annotation.Category;
 import guru.qa.niffler.jupiter.annotation.CreateNewUser;
 import guru.qa.niffler.jupiter.annotation.Spending;
-import guru.qa.niffler.model.UserModel;
+import guru.qa.niffler.model.UserJson;
 import guru.qa.niffler.service.SpendClient;
 import guru.qa.niffler.service.db.impl.jdbc.SpendDbClientJdbc;
 import guru.qa.niffler.utils.CategoryUtils;
@@ -19,7 +19,7 @@ class SpendJdbcTest {
     private final SpendClient spendClient = new SpendDbClientJdbc();
 
     @Test
-    void shouldCreateNewSpendTest(@CreateNewUser(categories = @Category) UserModel user) {
+    void shouldCreateNewSpendTest(@CreateNewUser(categories = @Category) UserJson user) {
         var category = user.getTestData().getCategories().getFirst();
         assertNotNull(spendClient
                 .create(SpendUtils.generateForUser(user.getUsername()).setCategory(category))
@@ -27,13 +27,13 @@ class SpendJdbcTest {
     }
 
     @Test
-    void shouldGetSpendByIdTest(@CreateNewUser(spendings = @Spending) UserModel user) {
+    void shouldGetSpendByIdTest(@CreateNewUser(spendings = @Spending) UserJson user) {
         assertNotNull(spendClient
                 .findById(user.getTestData().getSpendings().getFirst().getId()));
     }
 
     @Test
-    void shouldGetSpendByUsernameAndDescriptionTest(@CreateNewUser(spendings = @Spending) UserModel user) {
+    void shouldGetSpendByUsernameAndDescriptionTest(@CreateNewUser(spendings = @Spending) UserJson user) {
         assertNotNull(spendClient
                 .findAllByUsernameAndDescription(
                         user.getUsername(),
@@ -41,7 +41,7 @@ class SpendJdbcTest {
     }
 
     @Test
-    void shouldGetAllSpendingsByUsernameTest(@CreateNewUser(spendings = @Spending) UserModel user) {
+    void shouldGetAllSpendingsByUsernameTest(@CreateNewUser(spendings = @Spending) UserJson user) {
         assertFalse(spendClient
                 .findAllByUsername(user.getUsername())
                 .isEmpty());
@@ -49,8 +49,8 @@ class SpendJdbcTest {
 
     @Test
     void shouldGetAllSpendingsTest(
-            @CreateNewUser(spendings = @Spending) UserModel user1,
-            @CreateNewUser(spendings = @Spending) UserModel user2
+            @CreateNewUser(spendings = @Spending) UserJson user1,
+            @CreateNewUser(spendings = @Spending) UserJson user2
     ) {
         var allSpendings = spendClient.findAll();
         assertAll("Should contains users spendings", () -> {
@@ -60,7 +60,7 @@ class SpendJdbcTest {
     }
 
     @Test
-    void shouldRemoveSpendTest(@CreateNewUser(spendings = @Spending) UserModel user) {
+    void shouldRemoveSpendTest(@CreateNewUser(spendings = @Spending) UserJson user) {
         spendClient.remove(user.getTestData().getSpendings().getFirst());
         assertTrue(spendClient
                 .findAllByUsername(user.getUsername()).isEmpty());
@@ -68,20 +68,20 @@ class SpendJdbcTest {
 
 
     @Test
-    void shouldCreateNewCategoryTest(@CreateNewUser UserModel user) {
+    void shouldCreateNewCategoryTest(@CreateNewUser UserJson user) {
         assertNotNull(spendClient
                 .createCategory(CategoryUtils.generateForUser(user.getUsername()))
                 .getId());
     }
 
     @Test
-    void shouldGetCategoryByIdTest(@CreateNewUser(categories = @Category) UserModel user) {
+    void shouldGetCategoryByIdTest(@CreateNewUser(categories = @Category) UserJson user) {
         assertNotNull(spendClient
                 .findCategoryById(user.getTestData().getCategories().getFirst().getId()));
     }
 
     @Test
-    void shouldGetCategoryByUsernameAndNameTest(@CreateNewUser(categories = @Category) UserModel user) {
+    void shouldGetCategoryByUsernameAndNameTest(@CreateNewUser(categories = @Category) UserJson user) {
         assertNotNull(spendClient
                 .findCategoryByUsernameAndName(
                         user.getUsername(),
@@ -89,7 +89,7 @@ class SpendJdbcTest {
     }
 
     @Test
-    void shouldGetAllCategoriesByUsernameTest(@CreateNewUser(categories = @Category) UserModel user) {
+    void shouldGetAllCategoriesByUsernameTest(@CreateNewUser(categories = @Category) UserJson user) {
         assertFalse(spendClient
                 .findAllCategoriesByUsername(user.getUsername())
                 .isEmpty());
@@ -97,8 +97,8 @@ class SpendJdbcTest {
 
     @Test
     void shouldGetAllCategories(
-            @CreateNewUser(categories = @Category) UserModel user1,
-            @CreateNewUser(categories = @Category) UserModel user2
+            @CreateNewUser(categories = @Category) UserJson user1,
+            @CreateNewUser(categories = @Category) UserJson user2
     ) {
         var allCategories = spendClient.findAllCategories();
         assertAll("Should contains users categories", () -> {
@@ -108,7 +108,7 @@ class SpendJdbcTest {
     }
 
     @Test
-    void shouldRemoveCategoryTest(@CreateNewUser(categories = @Category) UserModel user) {
+    void shouldRemoveCategoryTest(@CreateNewUser(categories = @Category) UserJson user) {
         spendClient.removeCategory(user.getTestData().getCategories().getFirst());
         assertTrue(spendClient.findAllCategoriesByUsername(user.getUsername()).isEmpty());
     }
