@@ -134,7 +134,6 @@ public class CreateNewUserExtension implements BeforeEachCallback, AfterEachCall
     @SuppressWarnings("unchecked")
     private static Map<String, UserJson> getUsersMap() {
         ExtensionContext extensionContext = TestMethodContextExtension.context();
-        log.info("ExtensionContext: {}", extensionContext.getUniqueId());
         return (Map<String, UserJson>) extensionContext.getStore(NAMESPACE)
                 .getOrComputeIfAbsent(extensionContext.getUniqueId(), map -> new HashMap<>());
     }
