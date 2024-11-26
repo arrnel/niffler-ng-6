@@ -48,12 +48,12 @@ public class FriendshipExtension implements BeforeEachCallback {
 
                             if (userAnno.outcomeInvitations() > 0) {
                                 testData.setOutcomeInvitations(usersClient
-                                        .sendOutcomeInvitationToNewUsers(user, userAnno.incomeInvitations()));
+                                        .sendOutcomeInvitationToNewUsers(user, userAnno.outcomeInvitations()));
                             }
 
                             if (userAnno.friends() > 0) {
                                 testData.setFriends(usersClient
-                                        .addNewFriends(user, userAnno.incomeInvitations()));
+                                        .addNewFriends(user, userAnno.friends()));
                             }
 
                             CreateNewUserExtension.setUserByTestParamName(parameterName, user.setTestData(testData));
