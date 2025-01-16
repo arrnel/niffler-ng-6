@@ -111,7 +111,7 @@ User-MacBook-Pro  niffler % bash localenv.sh
 Или выполнив последовательно команды, для *nix:
 
 ```posh
-docker run --name niffler-all -p 5432:5432 -e POSTGRES_PASSWORD=secret -e CREATE_DATABASES=niffler-auth,niffler-currency,niffler-spend,niffler-userdata -v pgdata:/var/lib/postgresql/data -v ./postgres/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh -d postgres:15.1 --max_prepared_transactions=100
+docker run --name niffler-all -p 5432:5432 -e POSTGRES_PASSWORD=secret -e CREATE_DATABASES=niffler-auth,niffler-currency,niffler-spend,niffler-userdata -e TZ=GMT+3 -e PGTZ=GMT+3 -v pgdata:/var/lib/postgresql/data -v ./postgres/script:/docker-entrypoint-initdb.d -d postgres:15.1 --max_prepared_transactions=100
 
 docker run --name=zookeeper -e ZOOKEEPER_CLIENT_PORT=2181 -p 2181:2181 -d confluentinc/cp-zookeeper:7.3.2
 
@@ -127,7 +127,7 @@ docker run --name=kafka -e KAFKA_BROKER_ID=1 \
 Для Windows (Необходимо использовать bash terminal: gitbash, cygwin или wsl):
 
 ```posh
-docker run --name niffler-all -p 5432:5432 -e POSTGRES_PASSWORD=secret -e CREATE_DATABASES=niffler-auth,niffler-currency,niffler-spend,niffler-userdata -v pgdata:/var/lib/postgresql/data -v ./postgres/init-database.sh:/docker-entrypoint-initdb.d/init-database.sh -d postgres:15.1 --max_prepared_transactions=100
+docker run --name niffler-all -p 5432:5432 -e POSTGRES_PASSWORD=secret -e CREATE_DATABASES=niffler-auth,niffler-currency,niffler-spend,niffler-userdata -e TZ=GMT+3 -e PGTZ=GMT+3 -v pgdata:/var/lib/postgresql/data -v ./postgres/script:/docker-entrypoint-initdb.d -d postgres:15.1 --max_prepared_transactions=100
 
 docker run --name=zookeeper -e ZOOKEEPER_CLIENT_PORT=2181 -p 2181:2181 -d confluentinc/cp-zookeeper:7.3.2
 
@@ -184,7 +184,7 @@ User-MacBook-Pro niffler % cd niffler-ng-client
 или для GraphQL **_(временно недоступно)_**:
 
 ```posh
-User-MacBook-Pro niffler % cd niffler-ng-client-gql
+User-MacBook-Pro niffler % cd niffler-ng-gql-client
 ```
 
 #### 2. Запустить фронтенд в режиме preview (сначала обновить зависимости)
@@ -229,14 +229,6 @@ WSDL сервиса niffler-userdata доступен по адресу: http://
 [Инструкция](https://docs.docker.com/docker-hub/access-tokens/).
 
 #### 3. Выполнить docker login с созданным access_token (в инструкции это описано)
-
-Также нужно выполнить:
-```posh
-docker login registry.hub.docker.com
-```
-```posh
-docker login registry-1.docker.io
-```
 
 #### 4. Прописать в etc/hosts элиас для Docker-имени
 
@@ -340,7 +332,7 @@ chmod +x init-database.sh
 #### 1. Войти в свою УЗ на https://hub.docker.com/ и последовательно создать публичные репозитории
 
 - niffler-ng-client
-- niffler-ng-client-gql
+- niffler-ng-gql-client
 - niffler-userdata
 - niffler-spend
 - niffler-gateway
