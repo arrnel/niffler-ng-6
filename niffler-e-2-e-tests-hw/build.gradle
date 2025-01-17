@@ -5,9 +5,11 @@ buildscript {
         allureVersion = '2.29.0'
         selenideVersion = '7.4.2'
         retrofitVersion = '2.11.0'
-        okhttp3Version = '3.14.9'
+        okhttp3Version = '4.11.0'
         logbackVersion = '1.4.11'
         slf4jVersion = '2.0.9'
+        apolloClientVersion = '0.0.2'
+        apolloAdaptersVersion = '0.0.4'
         springJdbcVersion = '6.1.12'
         springCryptoVersion = '6.3.1'
         p6spyVersion = '3.9.1'
@@ -23,6 +25,9 @@ buildscript {
         userdataWsdlUrl = System.getProperty("test.env") == "docker"
                 ? "http://userdata.niffler.dc:8089/ws/userdata.wsdl"
                 : "http://127.0.0.1:8089/ws/userdata.wsdl"
+        gatewayIntrospectionUrl = System.getProperty("test.env") == "docker"
+                ? "http://gateway.niffler.dc:8090/graphql"
+                : "http://127.0.0.1:8090/graphql"
     }
 }
 
@@ -30,6 +35,7 @@ plugins {
     id 'io.qameta.allure' version '2.12.0'
     id 'io.qameta.allure-adapter' version '2.12.0'
     id 'com.github.edeandrea.xjc-generation' version '1.6'
+    id 'com.apollographql.apollo' version '4.1.0'
 }
 
 group = 'guru.qa'
@@ -54,11 +60,31 @@ xjcGeneration {
     }
 }
 
+apollo {
+    service("niffler") {
+
+        generateKotlinModels.set(false) // убрать автоматическую генерацию для Kotlin и оставить только Java
+        packageName.set("guru.qa")
+        srcDir("src/test/graphql") // путь к директории со схемами, не должен лежать в resources
+        mapScalar("Date", "java.util.Date") // подключение кастомных скаляров
+
+        introspection { // позволяет описать откуда будет скачиваться схема
+            endpointUrl.set("$gatewayIntrospectionUrl")
+            schemaFile.set(file("src/test/graphql/schema.graphqls")) // путь сохранения
+        }
+        outputDirConnection {// указываем к какому sourceSet подключить сгенерированные классы
+            connectToJavaSourceSet("test")
+        }
+
+    }
+}
+
 sourceSets {
     test {
         java {
             srcDir('src/test/java')
             srcDir("$buildDir/generated-sources/test/xjc")
+            srcDir("$buildDir/generated/source/apollo/niffler/") // тут "niffler" - название сервиса в apollo (cм. выше)
         }
     }
 }
@@ -72,9 +98,14 @@ dependencies {
     // REST
     testImplementation "com.squareup.retrofit2:retrofit:${retrofitVersion}"
     testImplementation "com.squareup.retrofit2:converter-jackson:${retrofitVersion}"
+    testImplementation "com.squareup.okhttp3:okhttp:${okhttp3Version}"
     testImplementation "com.squareup.okhttp3:logging-interceptor:${okhttp3Version}"
     testImplementation "com.squareup.okhttp3:okhttp-urlconnection:${okhttp3Version}"
     testImplementation "org.springframework.data:spring-data-commons:${springDataCommonsVersion}"
+    // GraphQL
+    testImplementation "com.apollographql.java:client:${apolloClientVersion}"
+    testImplementation "com.apollographql.java:rx2:${apolloClientVersion}"
+    testImplementation "com.apollographql.adapters:apollo-adapters-core:${apolloAdaptersVersion}"
     // DB
     testImplementation "org.springframework:spring-jdbc:${springJdbcVersion}"
     testImplementation "org.postgresql:postgresql:${project.ext.postgresDriverVersion}"
@@ -135,6 +166,12 @@ tasks.register('printVersion') {
     doLast {
         println project.version
     }
+}
+
+// Нужно чтобы перед вызовом таски generateNifflerApolloSources вызывалась таска downloadNifflerApolloSchemaFromIntrospection
+// "Niffler" в обоих названиях - название сервиса в apollo{} (cм. выше)
+tasks.named { it == "generateNifflerApolloSources" }.configureEach {
+    dependsOn("downloadNifflerApolloSchemaFromIntrospection")
 }
 
 test {
